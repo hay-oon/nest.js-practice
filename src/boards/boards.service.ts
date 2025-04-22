@@ -1,31 +1,32 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Board, BoardStatus } from './board.model';
-import { v1 as uuid } from 'uuid';
+import { BoardStatus } from './board-status.enum';
 import { CreateBoardDto } from './dto/create-board.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Board } from './board.entity';
+import { BoardRepository } from './board.repository';
 @Injectable()
 export class BoardsService {
-  private boards: Board[] = []; // private : 다른 컴포넌트에서 배열값을 수정할 수 없게 하기 위해 사용
+  constructor(
+    @InjectRepository(Board)
+    private boardRepository: Repository<Board>,
+    private customBoardRepo: BoardRepository,
+  ) {}
 
-  getAllBoards(): Board[] {
-    return this.boards;
+  // Read
+  async getAllBoards(): Promise<Board[]> {
+    return await this.boardRepository.find();
   }
 
-  createBoard(createBoardDto: CreateBoardDto) {
-    const { title, description } = createBoardDto;
-
-    const board: Board = {
-      id: uuid(),
-      title,
-      description,
-      status: BoardStatus.PUBLIC,
-    };
-
-    this.boards.push(board);
-    return board;
+  // Create
+  createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
+    // 커스텀 레포지토리의 메소드 사용
+    return this.customBoardRepo.createBoard(createBoardDto);
   }
 
-  getBoardById(id: string): Board | undefined {
-    const found = this.boards.find((board) => board.id === id);
+  // Read
+  async getBoardById(id: number): Promise<Board> {
+    const found = await this.boardRepository.findOne({ where: { id } });
 
     if (!found) {
       throw new NotFoundException('해당 id는 없음!');
@@ -34,18 +35,23 @@ export class BoardsService {
     return found;
   }
 
-  deleteBoard(id: string): void {
-    const found = this.getBoardById(id);
-    if (found) {
-      this.boards = this.boards.filter((board) => board.id !== found.id);
+  // Delete
+  async deleteBoard(id: number): Promise<void> {
+    const result = await this.boardRepository.delete(id);
+
+    if (result.affected === 0) {
+      // affected : 삭제된 데이터의 개수
+      throw new NotFoundException(`해당 'id:${id}'는 없어요!`);
     }
   }
 
-  updateBoardStatus(id: string, status: BoardStatus): Board | undefined {
-    const board = this.getBoardById(id);
-    if (board) {
-      board.status = status;
-    }
+  // Update
+  async updateBoardStatus(id: number, status: BoardStatus): Promise<Board> {
+    const board = await this.getBoardById(id);
+
+    board.status = status;
+    await this.boardRepository.save(board);
+
     return board;
   }
 }
