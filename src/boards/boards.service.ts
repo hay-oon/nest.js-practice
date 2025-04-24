@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Board } from './board.entity';
 import { BoardRepository } from './board.repository';
+import { User } from 'src/auth/user.entity';
 @Injectable()
 export class BoardsService {
   constructor(
@@ -19,9 +20,9 @@ export class BoardsService {
   }
 
   // Create
-  createBoard(createBoardDto: CreateBoardDto): Promise<Board> {
+  createBoard(createBoardDto: CreateBoardDto, user: User): Promise<Board> {
     // 커스텀 레포지토리의 메소드 사용
-    return this.customBoardRepo.createBoard(createBoardDto);
+    return this.customBoardRepo.createBoard(createBoardDto, user);
   }
 
   // Read
