@@ -42,7 +42,7 @@ export class AuthController {
   @Post('/test')
   @UseGuards(AuthGuard())
   test(@Req() req, @GetUser() user: User) {
-    console.log(req); // 토큰 정보
-    console.log(user); // 유저 정보, req.user 와 같음
+    console.log(req);
+    console.log(user); // 커스텀 데코레이터로 추출한 유저 정보, req.user 와 같음
   }
 }

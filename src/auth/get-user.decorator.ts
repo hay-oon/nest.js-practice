@@ -1,7 +1,7 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { User } from './user.entity';
 
-// 커스텀 데코레이터 생성
+// 커스텀 데코레이터 생성 : req.user 추출
 export const GetUser = createParamDecorator(
   (_data, ctx: ExecutionContext): User => {
     const req = ctx.switchToHttp().getRequest();
