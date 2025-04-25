@@ -37,8 +37,8 @@ export class BoardsService {
   }
 
   // Delete
-  async deleteBoard(id: number): Promise<void> {
-    const result = await this.boardRepository.delete(id);
+  async deleteBoard(id: number, user: User): Promise<void> {
+    const result = await this.boardRepository.delete({ id, user });
 
     if (result.affected === 0) {
       // affected : 삭제된 데이터의 개수
